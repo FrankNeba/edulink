@@ -186,6 +186,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://edulink-mauve.vercel.app',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'https://edulink-production-bfcc.up.railway.app',
 ]
 CORS_ALLOW_ALL_ORIGINS = False
 
