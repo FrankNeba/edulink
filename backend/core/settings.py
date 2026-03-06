@@ -24,6 +24,7 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') + [
     'edulink-production-bfcc.up.railway.app',
+    'healthcheck.railway.app',
     'edulink-mauve.vercel.app',
     'localhost',
     '127.0.0.1',
