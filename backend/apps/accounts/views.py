@@ -1,3 +1,4 @@
+import os
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -85,7 +86,7 @@ def send_credentials_email(user, password, user_id):
     }.get(user.role, 'Member')
 
     id_label = 'Student ID' if user.role == 'STUDENT' else 'Staff ID'
-    login_url = 'http://localhost:3000/login'
+    login_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000') + '/login'
 
     subject = f'Welcome to EduLink – Your Login Credentials'
 
