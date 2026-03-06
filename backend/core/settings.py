@@ -94,7 +94,6 @@ DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
-        conn_health_checks=True,
     )
 }
 
@@ -132,7 +131,17 @@ USE_TZ = True
 # ── Static files ────────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Django 5+ uses STORAGES dict; whitenoise compressed (no manifest) avoids
+# hash-mismatch crashes on first deploy when staticfiles are missing.
+STORAGES = {
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+    },
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+}
 
 # ── Media files ──────────────────────────────────────────────────────────────────
 # Railway has no persistent disk — media is served via Supabase in production.
@@ -194,4 +203,6 @@ SUPABASE_BUCKET      = os.environ.get('SUPABASE_BUCKET', 'files')
 # In production (Railway) use Supabase bucket — Railway has no persistent disk.
 # Locally (DEBUG=True or no Supabase credentials) files go to MEDIA_ROOT.
 if SUPABASE_URL and SUPABASE_SERVICE_KEY and not DEBUG:
-    DEFAULT_FILE_STORAGE = 'core.supabase_storage.SupabaseStorage'
+    STORAGES['default'] = {
+        'BACKEND': 'core.supabase_storage.SupabaseStorage',
+    }

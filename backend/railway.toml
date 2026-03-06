@@ -5,8 +5,7 @@ builder = "nixpacks"
 nixPkgs = ["python311", "gcc"]
 
 [deploy]
-startCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p $PORT core.asgi:application"
 healthcheckPath = "/api/health/"
-healthcheckTimeout = 30
+healthcheckTimeout = 60
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
