@@ -30,6 +30,17 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') + [
     '127.0.0.1',
 ]
 
+# Railway sits behind a TLS-terminating proxy — trust the forwarded headers
+# so Django sees https:// and the real host (required for CSRF to work).
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CSRF trusted origins — must match the exact domain the browser POSTs from
+CSRF_TRUSTED_ORIGINS = [
+    'https://edulink-production-bfcc.up.railway.app',
+    'https://edulink-mauve.vercel.app',
+]
+
 
 # Application definition
 
