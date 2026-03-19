@@ -1,4 +1,5 @@
 import os
+import logging
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -72,6 +73,9 @@ def generate_teacher_id(dept_code):
         count += 1
         candidate = f"TEA-{dept_code}-{year}-{count:03d}"
     return candidate
+
+logger = logging.getLogger(__name__)
+
 
 def send_credentials_email(user, password, user_id):
     from django.core.mail import EmailMultiAlternatives
@@ -284,8 +288,9 @@ EduLink Administrative Office
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
+        logger.info(f"[EMAIL] Credentials sent to {user.email} ({user.role})")
     except Exception as e:
-        print(f"Failed to send email to {user.email}: {str(e)}")
+        logger.error(f"[EMAIL FAILED] Could not send to {user.email}: {type(e).__name__}: {str(e)}", exc_info=True)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
