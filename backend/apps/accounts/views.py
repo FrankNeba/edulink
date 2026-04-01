@@ -445,8 +445,17 @@ class UserViewSet(viewsets.ModelViewSet):
                     academic_level = AcademicLevel.objects.get(id=serializer.validated_data['academic_level_id'])
 
                 password = secrets.token_urlsafe(8)
+                
+                # Check if user already exists
+                email = serializer.validated_data['email']
+                if User.objects.filter(email=email).exists():
+                    return Response(
+                        {"error": f"A user with email {email} already exists."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
                 user = User.objects.create_user(
-                    email=serializer.validated_data['email'],
+                    email=email,
                     password=password,
                     first_name=serializer.validated_data['first_name'],
                     last_name=serializer.validated_data['last_name'],
