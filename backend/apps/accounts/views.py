@@ -91,227 +91,52 @@ def send_credentials_email(user, password, user_id):
         'PRINCIPAL': 'Principal',
     }.get(user.role, 'Member')
 
-    id_label = 'Student ID' if user.role == 'STUDENT' else 'Staff ID'
-    login_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000') + '/login'
+    def _do_send():
+        id_label = 'Student ID' if user.role == 'STUDENT' else 'Staff ID'
+        login_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000') + '/login'
+        subject = f'Welcome to EduLink – Your Login Credentials'
 
-    subject = f'Welcome to EduLink – Your Login Credentials'
+        # Plain-text fallback
+        plain_text = f"Hello {user.first_name},\n\nWelcome to EduLink! Your account has been created.\n\n" \
+                     f"Email: {user.email}\n" \
+                     f"Password: {password}\n" \
+                     f"Login URL: {login_url}\n\n" \
+                     f"Please change your password on first login."
 
-    # Plain-text fallback
-    plain_text = f"""
-Hello {user.first_name},
-
-Welcome to EduLink School E-Learning System!
-
-Your account has been created. Below are your login details:
-
-  {id_label}: {user_id}
-  Email:      {user.email}
-  Password:   {password}
-
-Sign in at: {login_url}
-
-Important: You will be asked to change your password on first login.
-Please do not share your credentials with anyone.
-
-Regards,
-EduLink Administrative Office
-"""
-
-    html_content = f"""
+        html_content = f"""
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Welcome to EduLink</title>
-</head>
-<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;">
-
-  <!-- Wrapper -->
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-
-          <!-- Header -->
-          <tr>
-            <td style="background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%);padding:40px 40px 32px;text-align:center;">
-              <!-- Logo mark -->
-              <table cellpadding="0" cellspacing="0" style="margin:0 auto 20px;">
-                <tr>
-                  <td style="background:rgba(255,255,255,0.15);border-radius:14px;width:56px;height:56px;text-align:center;vertical-align:middle;">
-                    <span style="font-size:28px;line-height:56px;">🎓</span>
-                  </td>
-                </tr>
-              </table>
-              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:900;letter-spacing:-0.5px;">EduLink</h1>
-              <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;font-weight:500;letter-spacing:0.05em;">School E-Learning Management System</p>
-            </td>
-          </tr>
-
-          <!-- Body -->
-          <tr>
-            <td style="padding:40px 40px 0;">
-              <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px;font-weight:800;">Welcome, {user.first_name}! 👋</h2>
-              <p style="margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.6;">
-                Your <strong>{role_label}</strong> account on EduLink has been created. 
-                You can now sign in and start using the platform.
-              </p>
-
-              <!-- Credentials Card -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:24px 28px;">
-                    <p style="margin:0 0 16px;color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Your Login Credentials</p>
-
-                    <!-- ID Row -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
-                      <tr>
-                        <td style="color:#64748b;font-size:13px;font-weight:600;width:40%;">{id_label}</td>
-                        <td style="color:#7c3aed;font-size:13px;font-weight:800;font-family:monospace;">{user_id}</td>
-                      </tr>
-                    </table>
-                    <hr style="border:none;border-top:1px solid #e2e8f0;margin:12px 0;" />
-
-                    <!-- Email Row -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
-                      <tr>
-                        <td style="color:#64748b;font-size:13px;font-weight:600;width:40%;">Email</td>
-                        <td style="color:#1e293b;font-size:13px;font-weight:700;">{user.email}</td>
-                      </tr>
-                    </table>
-                    <hr style="border:none;border-top:1px solid #e2e8f0;margin:12px 0;" />
-
-                    <!-- Password Row -->
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="color:#64748b;font-size:13px;font-weight:600;width:40%;">Temporary Password</td>
-                        <td>
-                          <span style="display:inline-block;background:#fef3c7;border:1.5px solid #fde68a;color:#92400e;font-size:15px;font-weight:800;font-family:monospace;padding:4px 12px;border-radius:8px;letter-spacing:0.05em;">{password}</span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-                <tr>
-                  <td align="center">
-                    <a href="{login_url}"
-                       style="display:inline-block;background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%);color:#ffffff;font-size:15px;font-weight:800;text-decoration:none;padding:14px 36px;border-radius:12px;box-shadow:0 4px 14px rgba(124,58,237,0.35);letter-spacing:0.02em;">
-                      Sign In to EduLink →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Warning Notice -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;margin-bottom:32px;">
-                <tr>
-                  <td style="padding:16px 20px;">
-                    <p style="margin:0;color:#c2410c;font-size:13px;font-weight:700;">
-                      ⚠️ &nbsp;Important: You will be prompted to change your password on your first login. 
-                      Please do not share your credentials with anyone.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Steps -->
-          <tr>
-            <td style="padding:0 40px 36px;">
-              <p style="margin:0 0 16px;color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Getting Started</p>
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                    <table cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="width:28px;height:28px;background:#7c3aed;border-radius:8px;text-align:center;vertical-align:middle;font-size:12px;font-weight:900;color:#fff;">1</td>
-                        <td style="padding-left:12px;color:#334155;font-size:13px;font-weight:600;">Go to <a href="{login_url}" style="color:#7c3aed;text-decoration:none;font-weight:700;">{login_url}</a></td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                    <table cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="width:28px;height:28px;background:#7c3aed;border-radius:8px;text-align:center;vertical-align:middle;font-size:12px;font-weight:900;color:#fff;">2</td>
-                        <td style="padding-left:12px;color:#334155;font-size:13px;font-weight:600;">Enter your email and the temporary password above</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:10px 0;">
-                    <table cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="width:28px;height:28px;background:#7c3aed;border-radius:8px;text-align:center;vertical-align:middle;font-size:12px;font-weight:900;color:#fff;">3</td>
-                        <td style="padding-left:12px;color:#334155;font-size:13px;font-weight:600;">Set a new personal password when prompted</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;text-align:center;">
-              <p style="margin:0 0 4px;color:#94a3b8;font-size:12px;">
-                This email was sent by <strong style="color:#64748b;">EduLink School E-Learning System</strong>
-              </p>
-              <p style="margin:0;color:#cbd5e1;font-size:11px;">
-                If you did not expect this email, please contact your school administrator.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-
+<html>
+<body>
+  <h2>Welcome, {user.first_name}! 👋</h2>
+  <p>Your <strong>{role_label}</strong> account has been created.</p>
+  <p><strong>Email:</strong> {user.email}</p>
+  <p><strong>Temporary Password:</strong> {password}</p>
+  <a href="{login_url}">Sign In to EduLink →</a>
 </body>
 </html>
 """
-
-    try:
-        msg = EmailMultiAlternatives(
-            subject=subject,
-            body=plain_text,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[user.email],
-        )
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-        logger.info(f"[EMAIL] Credentials sent to {user.email} ({user.role})")
-        
-        # Additionally send via Frontend API (Non-blocking)
-        def _send_to_frontend():
+        try:
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=plain_text,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email],
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            logger.info(f"[EMAIL] Django SMTP Success: {user.email}")
+            
+            # Frontend API bridge
             try:
                 frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
-                api_endpoint = f"{frontend_url}/api/send-email"
-                payload = {
-                    "to": user.email,
-                    "subject": subject,
-                    "html": html_content,
-                    "text": plain_text
-                }
-                requests.post(api_endpoint, json=payload, timeout=20)
-                logger.info(f"[EMAIL] Successfully sent additional email via frontend API to {user.email}")
-            except Exception as api_e:
-                logger.warning(f"[EMAIL API FAILED] Could not send via frontend API: {str(api_e)}")
+                requests.post(f"{frontend_url}/api/send-email", json={
+                    "to": user.email, "subject": subject, "html": html_content
+                }, timeout=15)
+            except Exception: pass
+        except Exception as e:
+            logger.error(f"[EMAIL] Error: {str(e)}")
 
-        threading.Thread(target=_send_to_frontend).start()
-
-    except Exception as e:
-        logger.error(f"[EMAIL FAILED] Could not send to {user.email}: {type(e).__name__}: {str(e)}", exc_info=True)
+    threading.Thread(target=_do_send).start()
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
