@@ -454,6 +454,9 @@ class UserViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
+                # Use a simpler password format for easier first-time login
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+
                 user = User.objects.create_user(
                     email=email,
                     password=password,
@@ -601,9 +604,13 @@ class UserViewSet(viewsets.ModelViewSet):
             dept = Department.objects.get(id=serializer.validated_data['department_id'])
             
             with transaction.atomic():
-                password = secrets.token_urlsafe(8)
+                email = serializer.validated_data['email']
+                if User.objects.filter(email=email).exists():
+                    return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+                
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
                 user = User.objects.create_user(
-                    email=serializer.validated_data['email'],
+                    email=email,
                     password=password,
                     first_name=serializer.validated_data['first_name'],
                     last_name=serializer.validated_data['last_name'],
@@ -632,9 +639,13 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = HODCreateSerializer(data=request.data)
         if serializer.is_valid():
             with transaction.atomic():
-                password = secrets.token_urlsafe(8)
+                email = serializer.validated_data['email']
+                if User.objects.filter(email=email).exists():
+                    return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
                 user = User.objects.create_user(
-                    email=serializer.validated_data['email'],
+                    email=email,
                     password=password,
                     first_name=serializer.validated_data['first_name'],
                     last_name=serializer.validated_data['last_name'],
