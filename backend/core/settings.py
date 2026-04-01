@@ -132,8 +132,17 @@ if 'sqlite' in DATABASES['default']['ENGINE']:
             with connections[db_alias].cursor() as cursor:
                 cursor.execute('PRAGMA journal_mode=WAL;')
 
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+# Email Settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = f"EduLink <{EMAIL_HOST_USER}>"
+
+# Set connection timeout for SMTP to prevent hanging
+EMAIL_TIMEOUT = 10
 
 AUTH_PASSWORD_VALIDATORS = [
     {

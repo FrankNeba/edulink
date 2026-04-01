@@ -116,25 +116,36 @@ def send_credentials_email(user, password, user_id):
 </html>
 """
         try:
-            msg = EmailMultiAlternatives(
-                subject=subject,
-                body=plain_text,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[user.email],
-            )
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
-            logger.info(f"[EMAIL] Django SMTP Success: {user.email}")
-            
-            # Frontend API bridge
+            # 1. Try sending via Frontend API Bridge FIRST (Faster, handled by Next.js)
             try:
                 frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
-                requests.post(f"{frontend_url}/api/send-email", json={
-                    "to": user.email, "subject": subject, "html": html_content
-                }, timeout=15)
-            except Exception: pass
+                api_endpoint = f"{frontend_url}/api/send-email"
+                payload = {
+                    "to": user.email,
+                    "subject": subject,
+                    "html": html_content
+                }
+                response = requests.post(api_endpoint, json=payload, timeout=10)
+                if response.status_code == 200:
+                    logger.info(f"[EMAIL] Success via Frontend API: {user.email}")
+                else:
+                    logger.warning(f"[EMAIL] Frontend API returned {response.status_code}, falling back to SMTP")
+                    raise Exception("Frontend API Failure")
+            except Exception as e:
+                logger.info(f"[EMAIL] Frontend bridge skipped/failed ({str(e)}), trying Django SMTP...")
+                
+                # 2. Fallback to Django SMTP
+                msg = EmailMultiAlternatives(
+                    subject=subject,
+                    body=plain_text,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[user.email],
+                )
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
+                logger.info(f"[EMAIL] Django SMTP Success: {user.email}")
         except Exception as e:
-            logger.error(f"[EMAIL] Error: {str(e)}")
+            logger.error(f"[EMAIL] All delivery methods failed: {str(e)}")
 
     threading.Thread(target=_do_send).start()
 
