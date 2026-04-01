@@ -124,10 +124,12 @@ if 'sqlite' in DATABASES['default']['ENGINE']:
     # WAL mode improves concurrency in SQLite
     from django.db.models.signals import post_migrate
     from django.dispatch import receiver
+    from django.db import connections
     @receiver(post_migrate)
     def set_sqlite_wal_mode(sender, **kwargs):
-        if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
-            with sender.objects.using(kwargs['using']).connection.cursor() as cursor:
+        db_alias = kwargs.get('using', 'default')
+        if connections[db_alias].vendor == 'sqlite':
+            with connections[db_alias].cursor() as cursor:
                 cursor.execute('PRAGMA journal_mode=WAL;')
 
 # Password validation
