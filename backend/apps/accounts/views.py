@@ -485,6 +485,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     level=level
                 )
                 
+                # Email is now OUTSIDE the atomic block so the DB releases instantly
                 send_credentials_email(user, password, student_id)
                 
                 # AUTO REGISTRATION for Form 1-3
