@@ -112,15 +112,23 @@ ASGI_APPLICATION = 'core.asgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
+        conn_max_age=0,
     )
 }
 
 # Increase SQLite timeout to handle concurrent access
-if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+if 'sqlite' in DATABASES['default']['ENGINE']:
     DATABASES['default']['OPTIONS'] = {
-        'timeout': 20,
+        'timeout': 60,
     }
+    # WAL mode improves concurrency in SQLite
+    from django.db.models.signals import post_migrate
+    from django.dispatch import receiver
+    @receiver(post_migrate)
+    def set_sqlite_wal_mode(sender, **kwargs):
+        if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+            with sender.objects.using(kwargs['using']).connection.cursor() as cursor:
+                cursor.execute('PRAGMA journal_mode=WAL;')
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
