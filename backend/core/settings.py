@@ -20,7 +20,8 @@ SECRET_KEY = os.environ.get(
     'django-insecure-0*crj21s$f6^7$n58!mx1^e3u2fp1l*7jgyb=y(m)%qklxlb%r'
 )
 
-DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+# DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') + [
     'edulink-production-bfcc.up.railway.app',
@@ -28,6 +29,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') + [
     'edulink-mauve.vercel.app',
     'localhost',
     '127.0.0.1',
+    'edulink-yt9b.onrender.com'
 ]
 
 # Railway sits behind a TLS-terminating proxy — trust the forwarded headers
@@ -39,6 +41,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_TRUSTED_ORIGINS = [
     'https://edulink-production-bfcc.up.railway.app',
     'https://edulink-mauve.vercel.app',
+    'https://edulink-yt9b.onrender.com'
 ]
 
 

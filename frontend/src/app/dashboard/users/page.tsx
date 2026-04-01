@@ -29,6 +29,7 @@ export default function UsersManagementPage() {
         role: 'STUDENT'
     });
     const [result, setResult] = useState<any>(null);
+    const [selectedLevel, setSelectedLevel] = useState<any>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -336,11 +337,131 @@ export default function UsersManagementPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-sm text-red-500 font-bold leading-relaxed bg-red-500/5 p-4 rounded-xl border border-red-500/10">{result.message}</p>
+                                    <p className="text-sm text-red-500 font-bold leading-relaxed bg-red-500/5 p-4 rounded-xl border border-red-500/10">{result.message}</p>
                             )}
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* Class Levels & Student List Section */}
+            <div className="space-y-8 pt-12 border-t border-slate-100 dark:border-slate-800">
+                <div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Class Directories</h2>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Browse students by class level.</p>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {academicLevels.map((lvl) => (
+                        <button
+                            key={lvl.id}
+                            onClick={() => setSelectedLevel(selectedLevel?.id === lvl.id ? null : lvl)}
+                            className={`p-6 rounded-2xl border-2 transition-all text-left group relative overflow-hidden ${
+                                selectedLevel?.id === lvl.id
+                                    ? 'border-violet-600 bg-violet-600/5 shadow-xl shadow-violet-600/10'
+                                    : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-violet-200 dark:hover:border-violet-900/40'
+                            }`}
+                        >
+                            <div className={`w-10 h-10 rounded-xl mb-4 flex items-center justify-center transition-colors ${
+                                selectedLevel?.id === lvl.id ? 'bg-violet-600 text-white' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:text-violet-500'
+                            }`}>
+                                <LayoutGrid size={20} />
+                            </div>
+                            <h3 className={`font-black text-xs uppercase tracking-widest ${selectedLevel?.id === lvl.id ? 'text-violet-600' : 'text-slate-600 dark:text-slate-400'}`}>
+                                {lvl.name}
+                            </h3>
+                            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">
+                                {lvl.student_count || 0} Students
+                            </p>
+                            {selectedLevel?.id === lvl.id && (
+                                <div className="absolute top-4 right-4 animate-bounce">
+                                    <ChevronRight className="w-4 h-4 text-violet-600 rotate-90" />
+                                </div>
+                            )}
+                        </button>
+                    ))}
+                </div>
+
+                {selectedLevel && (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="card-base overflow-hidden border-violet-600/20">
+                            <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-violet-600/5">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center text-white shadow-lg shadow-violet-600/20">
+                                        <UserCheck size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+                                            {selectedLevel.name} Class List
+                                        </h3>
+                                        <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest mt-0.5">
+                                            Official Enrollment Directory
+                                        </p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedLevel(null)}
+                                    className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-slate-600"
+                                >
+                                    <CircleAlert className="w-6 h-6 rotate-45" />
+                                </button>
+                            </div>
+                            
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50/50 dark:bg-slate-800/50">
+                                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">Student ID</th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">Full Name</th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">Email Address</th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 text-right">Phone</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        {selectedLevel.students_data && selectedLevel.students_data.length > 0 ? (
+                                            selectedLevel.students_data.map((student: any) => (
+                                                <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                                                    <td className="px-8 py-5">
+                                                        <span className="font-mono text-xs font-black text-violet-600 bg-violet-600/5 px-3 py-1.5 rounded-lg border border-violet-600/10">
+                                                            {student.student_id}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <div className="font-bold text-slate-900 dark:text-white capitalize">
+                                                            {student.user.first_name} {student.user.last_name}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex items-center gap-2 text-slate-500 font-medium">
+                                                            <Mail size={14} className="text-slate-400" />
+                                                            {student.user.email}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-right">
+                                                        <div className="text-slate-500 font-bold tabular-nums">
+                                                            {student.user.phone || '—'}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={4} className="px-8 py-20 text-center">
+                                                    <div className="flex flex-col items-center gap-4">
+                                                        <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300">
+                                                            <User size={32} />
+                                                        </div>
+                                                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">No students enrolled in this class yet.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,0 +1,108 @@
+# Edulink Database Structure & ER Diagrams
+
+The Edulink database is a modular Django-based system designed for comprehensive school management. The architecture is divided into five main modules: `accounts`, `academic`, `content`, `quizzes`, and `notifications`.
+
+## 1. Core Architecture (Users & Academic Hierarchy)
+
+This module handles User Authentication, Role-based Profiles, and the Administrative structure of the school (Domains, SubDomains, Departments).
+
+### ER Diagram: Core Structure
+```mermaid
+erDiagram
+    USER ||--o| STUDENT_PROFILE : "has"
+    USER ||--o| TEACHER_PROFILE : "has"
+    USER ||--o| HOD_PROFILE : "has"
+    
+    DEPARTMENT ||--o| USER : "Dean (VP)"
+    ACADEMIC_LEVEL ||--o| USER : "Class Master (Teacher)"
+    
+    DOMAIN ||--o{ SUB_DOMAIN : "contains"
+    DOMAIN ||--o{ ACADEMIC_LEVEL : "categorizes"
+    SUB_DOMAIN ||--o{ ACADEMIC_LEVEL : "refines"
+    
+    DEPARTMENT ||--o{ BASE_SUBJECT : "manages"
+    BASE_SUBJECT ||--o{ SUBJECT : "instantiates"
+    
+    SUBJECT }|--|{ USER : "Teachers"
+    SUBJECT }|--|{ USER : "Students"
+    SUBJECT ||--o| ACADEMIC_LEVEL : "belongs_to"
+```
+
+### Key Models & Logic
+- **[User](file:///home/neba/Desktop/E_learning/backend/apps/accounts/models.py#22-43) (Accounts)**: Extends `AbstractUser`. Includes roles: `PRINCIPAL`, `VICE_PRINCIPAL`, [HOD](file:///home/neba/Desktop/E_learning/backend/apps/accounts/models.py#64-76), `TEACHER`, `STUDENT`.
+- **`Profiles`**: Specific data for different roles.
+    - [StudentProfile](file:///home/neba/Desktop/E_learning/backend/apps/accounts/models.py#44-55): Links students to their ID, Department, and Academic Level.
+    - [TeacherProfile](file:///home/neba/Desktop/E_learning/backend/apps/accounts/models.py#56-63): Links teachers to their primary Department.
+    - [HODProfile](file:///home/neba/Desktop/E_learning/backend/apps/accounts/models.py#64-76): Assigns HODs to specific Departments or Subjects.
+- **`Academic Hierarchy`**:
+    - [Domain](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#3-10) & [SubDomain](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#11-22): High-level categorization (e.g., General vs. Vocational, Science vs. Arts).
+    - [Department](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#23-38): Organized by Core Area or Subject Area.
+    - [BaseSubject](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#55-65) vs. [Subject](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#66-82): [BaseSubject](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#55-65) is a template (e.g., "Mathematics"), while [Subject](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#66-82) is a specific instance for a class (e.g., "Mathematics - Form 3").
+
+---
+
+## 2. Learning Management (Content & Assessments)
+
+This module manages the educational resources and student evaluation systems (Notes, Assignments, Quizzes).
+
+### ER Diagram: Learning Management
+```mermaid
+erDiagram
+    SUBJECT ||--o{ NOTE : "contains"
+    SUBJECT ||--o{ SYLLABUS : "has"
+    SUBJECT ||--o{ ASSIGNMENT : "assigns"
+    SUBJECT ||--o{ CURRICULUM_TOPIC : "covers"
+    SUBJECT ||--o{ QUIZ : "evaluates_with"
+    
+    QUIZ ||--o{ QUESTION : "contains"
+    QUESTION ||--o{ CHOICE : "has_options"
+    
+    QUIZ ||--o{ QUIZ_ATTEMPT : "attempted_by"
+    USER ||--o{ QUIZ_ATTEMPT : "student_id"
+    
+    QUIZ_ATTEMPT ||--o{ ATTEMPT_ANSWER : "contains"
+    ATTEMPT_ANSWER ||--|| QUESTION : "answers"
+    ATTEMPT_ANSWER ||--|| CHOICE : "selects"
+    
+    TEACHER ||--o{ NOTE : "uploads"
+    TEACHER ||--o{ QUIZ : "creates"
+    TEACHER ||--o{ ASSIGNMENT : "assigns"
+```
+
+### Key Models & Logic
+- **`Content` (Notes & Syllabi)**:
+    - Files are stored in specific media directories (`notes/pdf/`, `syllabi/`).
+    - Syllabi are ordered by upload date, with the latest being "current".
+- **`Quizzes`**:
+    - Support for multiple-choice questions.
+    - `is_extracted` flag: Indicates if questions were parsed from a PDF/DOCX source.
+    - [QuizAttempt](file:///home/neba/Desktop/E_learning/backend/apps/quizzes/models.py#41-58): Tracks student performance, start/end times, and scores.
+    - [AttemptAnswer](file:///home/neba/Desktop/E_learning/backend/apps/quizzes/models.py#59-67): Stores specific student choices for each question to allow granular feedback.
+- **`Announcements`**: Flexible targeting based on Level (SCHOOL, DOMAIN, CLASS, SUBJECT).
+
+---
+
+## 3. Communication & System Logic
+
+### ER Diagram: Notifications
+```mermaid
+erDiagram
+    USER ||--o{ NOTIFICATION : "receives"
+    USER ||--o{ ANNOUNCEMENT : "authors"
+```
+
+### System Patterns
+1.  **Unique Constraints**: Many models use `unique_together` to ensure data integrity (e.g., a student can only attempt a specific quiz once).
+2.  **Role Protections**: `limit_choices_to` is extensively used in `ForeignKey` fields to ensure only users with the correct role (e.g., TEACHER) can be assigned as Class Masters or Quiz creators.
+3.  **Soft Compatibility**: Both [AcademicLevel](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#39-54) and [Subject](file:///home/neba/Desktop/E_learning/backend/apps/academic/models.py#66-82) maintain `level` CharFields for backward compatibility or migration convenience alongside new structured ForeignKeys.
+
+---
+
+## Implementation Summary
+The database uses a **Relational Schema** optimized for:
+- Granular administrative control (Principal down to Subject HOD).
+- Detailed tracking of student progress (Quiz attempts and subject registrations).
+- Tiered content delivery (Subject-specific material vs. School-wide announcements).
+
+> [!TIP]
+> To visualize this live in a Django environment, you can use `django-extensions` and run `python manage.py graph_models -a -o my_project_visualized.png`.

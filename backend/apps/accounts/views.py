@@ -19,6 +19,8 @@ from apps.quizzes.models import Quiz
 import string
 import random
 import secrets
+import requests
+import threading
 
 User = get_user_model()
 
@@ -289,6 +291,25 @@ EduLink Administrative Office
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         logger.info(f"[EMAIL] Credentials sent to {user.email} ({user.role})")
+        
+        # Additionally send via Frontend API (Non-blocking)
+        def _send_to_frontend():
+            try:
+                frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+                api_endpoint = f"{frontend_url}/api/send-email"
+                payload = {
+                    "to": user.email,
+                    "subject": subject,
+                    "html": html_content,
+                    "text": plain_text
+                }
+                requests.post(api_endpoint, json=payload, timeout=20)
+                logger.info(f"[EMAIL] Successfully sent additional email via frontend API to {user.email}")
+            except Exception as api_e:
+                logger.warning(f"[EMAIL API FAILED] Could not send via frontend API: {str(api_e)}")
+
+        threading.Thread(target=_send_to_frontend).start()
+
     except Exception as e:
         logger.error(f"[EMAIL FAILED] Could not send to {user.email}: {type(e).__name__}: {str(e)}", exc_info=True)
 

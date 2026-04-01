@@ -7,7 +7,7 @@ import {
     UserPlus, Mail, Phone, Building,
     ShieldCheck, CircleAlert, Loader2,
     User, ArrowRight, UserCheck, FileSpreadsheet,
-    Upload, CheckCircle, XCircle
+    Upload, CheckCircle, XCircle, LayoutGrid, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -37,6 +37,7 @@ export default function AddStudentsPage() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [bulkLevelId, setBulkLevelId] = useState('');
     const [bulkResult, setBulkResult] = useState<any>(null);
+    const [selectedLevel, setSelectedLevel] = useState<any>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -300,30 +301,194 @@ export default function AddStudentsPage() {
                     </div>
 
                     {result && activeTab === 'manual' && (
-                        <div className={`card-base p-8 animate-in zoom-in-95 ${result.type === 'success' ? 'border-emerald-500' : 'border-red-500'}`}>
+                        <div className={`card-base p-8 animate-in zoom-in-95 ${result.type === 'success' ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-red-500/50 bg-red-500/5'}`}>
                             <div className="flex items-center gap-4 mb-8">
-                                {result.type === 'success' ? <UserCheck className="w-8 h-8 text-emerald-500" /> : <XCircle className="w-8 h-8 text-red-500" />}
+                                {result.type === 'success' ? (
+                                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                                        <UserCheck className="w-6 h-6 text-white" />
+                                    </div>
+                                ) : (
+                                    <div className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/20">
+                                        <XCircle className="w-6 h-6 text-white" />
+                                    </div>
+                                )}
                                 <div>
-                                    <h3 className="font-black text-slate-900 dark:text-white uppercase tracking-widest text-xs">{result.type === 'success' ? 'Student Created' : 'Error'}</h3>
-                                    <p className="text-[10px] font-bold text-slate-400">{result.type === 'success' ? 'Share the details below.' : 'Please check and try again.'}</p>
+                                    <h3 className="font-black text-slate-900 dark:text-white uppercase tracking-widest text-xs">
+                                        {result.type === 'success' ? 'Student Created' : 'Error'}
+                                    </h3>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                        {result.type === 'success' ? 'Share the credentials below.' : 'Please check and try again.'}
+                                    </p>
                                 </div>
                             </div>
 
-                            {result.type === 'success' && (
+                            {result.type === 'success' ? (
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900 rounded-xl">
-                                        <span className="text-[10px] font-black uppercase text-slate-400">Student ID</span>
-                                        <span className="font-black text-violet-600 dark:text-violet-400">{result.data.student_id}</span>
+                                    <div className="p-5 bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl space-y-4 shadow-sm">
+                                        <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800 pb-3">
+                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Student ID</span>
+                                            <span className="font-black text-violet-600 dark:text-violet-400 font-mono text-sm tracking-tight">{result.data.student_id}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-1">
+                                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Temporary Password</span>
+                                            <span className="font-black text-emerald-500 font-mono text-lg tracking-tight select-all">{result.data.default_password}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900 rounded-xl">
-                                        <span className="text-[10px] font-black uppercase text-slate-400">Temporary Password</span>
-                                        <span className="font-black text-emerald-500">{result.data.default_password}</span>
+                                    <div className="p-4 bg-amber-500/5 rounded-2xl flex gap-3 border border-amber-500/10">
+                                        <CircleAlert size={18} className="text-amber-500 shrink-0" />
+                                        <p className="text-[10px] font-bold text-amber-600/80 leading-relaxed uppercase tracking-tight">
+                                            Important: Share the temporary password with the user. They will be asked to change it on first login.
+                                        </p>
                                     </div>
                                 </div>
+                            ) : (
+                                <p className="text-xs text-red-500 font-bold leading-relaxed bg-red-500/10 p-4 rounded-xl border border-red-500/20">
+                                    {result.message}
+                                </p>
                             )}
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* NEW SECTION: Class Directories */}
+            <div className="space-y-12 pt-12 border-t border-slate-100 dark:border-slate-800">
+                <div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-3">Academic Directories</h2>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Browse student enrollment by section and department.</p>
+                </div>
+
+                {domains.map((domain) => {
+                    const domainLevels = academicLevels.filter(al => al.domain === domain.id);
+                    if (domainLevels.length === 0) return null;
+
+                    return (
+                        <div key={domain.id} className="space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800" />
+                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-white dark:bg-slate-950 px-4">
+                                    {domain.name} Section
+                                </h3>
+                                <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800" />
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                {domainLevels.map((lvl) => (
+                                    <button
+                                        key={lvl.id}
+                                        onClick={() => setSelectedLevel(selectedLevel?.id === lvl.id ? null : lvl)}
+                                        className={`p-6 rounded-2xl border-2 transition-all text-left group relative overflow-hidden ${
+                                            selectedLevel?.id === lvl.id
+                                                ? 'border-violet-600 bg-violet-600/5 shadow-xl shadow-violet-600/10'
+                                                : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-violet-200 dark:hover:border-violet-900/40'
+                                        }`}
+                                    >
+                                        <div className={`w-10 h-10 rounded-xl mb-4 flex items-center justify-center transition-colors ${
+                                            selectedLevel?.id === lvl.id ? 'bg-violet-600 text-white' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:text-violet-500'
+                                        }`}>
+                                            <LayoutGrid size={20} />
+                                        </div>
+                                        <h3 className={`font-black text-xs uppercase tracking-widest leading-snug ${selectedLevel?.id === lvl.id ? 'text-violet-600' : 'text-slate-600 dark:text-slate-400'}`}>
+                                            {lvl.name}
+                                        </h3>
+                                        {lvl.sub_domain_name && (
+                                            <p className="text-[9px] font-black text-violet-500/60 uppercase mt-0.5">{lvl.sub_domain_name}</p>
+                                        )}
+                                        <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-tight">
+                                            {lvl.student_count || 0} Students
+                                        </p>
+                                        {selectedLevel?.id === lvl.id && (
+                                            <div className="absolute top-4 right-4 animate-bounce">
+                                                <ChevronRight className="w-4 h-4 text-violet-600 rotate-90" />
+                                            </div>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {selectedLevel && (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="card-base overflow-hidden border-violet-600/20">
+                            <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-violet-600/5">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center text-white shadow-lg shadow-violet-600/20">
+                                        <UserCheck size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+                                            {selectedLevel.name} Class List
+                                        </h3>
+                                        <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest mt-0.5">
+                                            Official Enrollment Directory
+                                        </p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedLevel(null)}
+                                    className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-slate-600"
+                                >
+                                    <CircleAlert className="w-6 h-6 rotate-45" />
+                                </button>
+                            </div>
+                            
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50/50 dark:bg-slate-800/50">
+                                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">Student ID</th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">Full Name</th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">Email Address</th>
+                                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 text-right">Phone</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        {selectedLevel.students_data && selectedLevel.students_data.length > 0 ? (
+                                            selectedLevel.students_data.map((student: any) => (
+                                                <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                                                    <td className="px-8 py-5">
+                                                        <span className="font-mono text-xs font-black text-violet-600 bg-violet-600/5 px-3 py-1.5 rounded-lg border border-violet-600/10">
+                                                            {student.student_id}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <div className="font-bold text-slate-900 dark:text-white capitalize">
+                                                            {student.user.first_name} {student.user.last_name}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex items-center gap-2 text-slate-500 font-medium">
+                                                            <Mail size={14} className="text-slate-400" />
+                                                            {student.user.email}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-right">
+                                                        <div className="text-slate-500 font-bold tabular-nums">
+                                                            {student.user.phone || '—'}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={4} className="px-8 py-20 text-center">
+                                                    <div className="flex flex-col items-center gap-4">
+                                                        <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300">
+                                                            <User size={32} />
+                                                        </div>
+                                                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">No students enrolled in this class yet.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
