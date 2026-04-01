@@ -116,6 +116,12 @@ DATABASES = {
     )
 }
 
+# Increase SQLite timeout to handle concurrent access
+if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    DATABASES['default']['OPTIONS'] = {
+        'timeout': 20,
+    }
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
