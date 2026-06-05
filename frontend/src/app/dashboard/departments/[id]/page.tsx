@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
 export default function DepartmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
@@ -53,10 +54,10 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ id:
 
     useEffect(() => { fetchData(); }, [id]);
 
-    const handleAssignHOD = async (baseSubId: number, hodId: string) => {
+    const handleAssignHOD = async (baseSubId: number, hodId: string | number) => {
         setActionLoading(true);
         try {
-            await api.patch(`base-subjects/${baseSubId}/`, { hod: hodId });
+            await api.patch(`base-subjects/${baseSubId}/`, { hod: hodId || null });
             fetchData();
         } catch (err) {
             alert('Assignment failed');
@@ -137,6 +138,25 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ id:
         }
     };
     /* ... same Loading ... */
+    const hodOptions = useMemo(() => {
+        const uniqueUsers = new Map<number, any>();
+        // Add teachers
+        teachers.forEach(t => uniqueUsers.set(t.id, t));
+        // Add HODs
+        hods.forEach(h => uniqueUsers.set(h.id, h));
+        
+        const list = Array.from(uniqueUsers.values()).map(u => ({
+            value: u.id,
+            label: `${u.first_name} ${u.last_name}`,
+            sublabel: `${u.email} (${u.role})`
+        }));
+
+        return [
+            { value: '', label: 'Unassigned', sublabel: 'No Head of Department' },
+            ...list
+        ];
+    }, [teachers, hods]);
+
     if (loading) return <div className="p-20 text-center animate-pulse">Loading department...</div>;
 
     const isAdmin = ['PRINCIPAL', 'VICE_PRINCIPAL', 'HOD'].includes(user?.role || '');
@@ -217,14 +237,14 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ id:
 
                                     <div className="pt-3 border-t border-slate-50 dark:border-slate-800/50">
                                         <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Subject HOD</p>
-                                        <select
-                                            className="w-full h-8 px-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-[10px] font-bold text-violet-600 outline-none"
-                                            onChange={(e) => handleAssignHOD(base.id, e.target.value)}
+                                        <SearchableSelect
+                                            options={hodOptions}
                                             value={base.hod || ''}
-                                        >
-                                            <option value="">Select HOD...</option>
-                                            {hods.map(h => <option key={h.id} value={h.id}>{h.first_name} {h.last_name}</option>)}
-                                        </select>
+                                            onChange={(val) => handleAssignHOD(base.id, val)}
+                                            placeholder="Select HOD..."
+                                            searchPlaceholder="Search teacher by name..."
+                                            disabled={!isVP}
+                                        />
                                     </div>
                                 </div>
                             ))}

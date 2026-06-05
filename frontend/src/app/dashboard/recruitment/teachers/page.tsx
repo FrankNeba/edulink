@@ -121,7 +121,7 @@ export default function AddTeachersPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className={labelCls}>Phone Number (Optional)</label>
+                                    <label className={labelCls}>Phone Number</label>
                                     <input
                                         className="input-modern"
                                         placeholder="+237 ..."
@@ -136,7 +136,7 @@ export default function AddTeachersPage() {
                                     <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                                 ) : (
                                     <span className="flex items-center justify-center gap-3">
-                                        Verify & Enroll Teacher <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                        Enroll Teacher <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                     </span>
                                 )}
                             </button>

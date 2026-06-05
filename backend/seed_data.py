@@ -81,47 +81,47 @@ def seed_data():
 
     # 6. Seed HODs for both types
     # 4 CORE HODs
-    for i, (code, dept) in enumerate(core_departments.items()):
-        email = f"core_hod_{code.lower()}@edulink.edu"
-        user = User.objects.create_user(email=email, password='Admin123!', first_name=f'Dir_{dept.name}', last_name='Staff', role='HOD')
-        HODProfile.objects.create(user=user, department=dept)
-        dept.hod = user
-        dept.save()
+    # for i, (code, dept) in enumerate(core_departments.items()):
+    #     email = f"core_hod_{code.lower()}@edulink.edu"
+    #     user = User.objects.create_user(email=email, password='Admin123!', first_name=f'Dir_{dept.name}', last_name='Staff', role='HOD')
+    #     HODProfile.objects.create(user=user, department=dept)
+    #     dept.hod = user
+    #     dept.save()
 
-    # 5 SUBJECT HODs
-    for i, (code, dept) in enumerate(subject_departments.items()):
-        email = f"subj_hod_{code.lower()}@edulink.edu"
-        user = User.objects.create_user(email=email, password='Admin123!', first_name=f'HOD_{dept.name.split()[0]}', last_name='Dept', role='HOD')
-        HODProfile.objects.create(user=user, department=dept)
-        dept.hod = user
-        dept.save()
+    # # 5 SUBJECT HODs
+    # for i, (code, dept) in enumerate(subject_departments.items()):
+    #     email = f"subj_hod_{code.lower()}@edulink.edu"
+    #     user = User.objects.create_user(email=email, password='Admin123!', first_name=f'HOD_{dept.name.split()[0]}', last_name='Dept', role='HOD')
+    #     HODProfile.objects.create(user=user, department=dept)
+    #     dept.hod = user
+    #     dept.save()
 
     # 10 Teachers
-    for i in range(10):
-        email = f"teacher{i+1}@edulink.edu"
-        user = User.objects.create_user(email=email, password='Admin123!', first_name=f'Teacher_{i+1}', last_name='Cameroon', role='TEACHER')
-        dept = random.choice(list(core_departments.values()))
-        TeacherProfile.objects.create(user=user, department=dept)
-        # Assign 5 random subjects
-        assigned = random.sample(all_subjects, 5)
-        for s in assigned:
-            s.teachers.add(user)
+    # for i in range(10):
+    #     email = f"teacher{i+1}@edulink.edu"
+    #     user = User.objects.create_user(email=email, password='Admin123!', first_name=f'Teacher_{i+1}', last_name='Cameroon', role='TEACHER')
+    #     dept = random.choice(list(core_departments.values()))
+    #     TeacherProfile.objects.create(user=user, department=dept)
+    #     # Assign 5 random subjects
+    #     assigned = random.sample(all_subjects, 5)
+    #     for s in assigned:
+    #         s.teachers.add(user)
 
-    # 40 Students
-    for i in range(40):
-        email = f"student{i+1}@edulink.edu"
-        user = User.objects.create_user(email=email, password='Admin123!', first_name=f'Student_{i+1}', last_name='Cameroon', role='STUDENT')
-        dept = random.choice(list(core_departments.values()))
-        lvl = random.choice(levels)
-        sid = f"STU-{dept.code}-{lvl.replace(' ', '').upper()}-{timezone.now().year}-{i+1:03d}"
-        StudentProfile.objects.create(user=user, student_id=sid, department=dept, level=lvl)
+    # # 40 Students
+    # for i in range(40):
+    #     email = f"student{i+1}@edulink.edu"
+    #     user = User.objects.create_user(email=email, password='Admin123!', first_name=f'Student_{i+1}', last_name='Cameroon', role='STUDENT')
+    #     dept = random.choice(list(core_departments.values()))
+    #     lvl = random.choice(levels)
+    #     sid = f"STU-{dept.code}-{lvl.replace(' ', '').upper()}-{timezone.now().year}-{i+1:03d}"
+    #     StudentProfile.objects.create(user=user, student_id=sid, department=dept, level=lvl)
         
-        # Register for subjects of their level
-        level_subjs = Subject.objects.filter(level=lvl)
-        if level_subjs.exists():
-            regs = random.sample(list(level_subjs), min(len(level_subjs), 8))
-            for s in regs:
-                s.students.add(user)
+    #     # Register for subjects of their level
+    #     level_subjs = Subject.objects.filter(level=lvl)
+    #     if level_subjs.exists():
+    #         regs = random.sample(list(level_subjs), min(len(level_subjs), 8))
+    #         for s in regs:
+    #             s.students.add(user)
 
     print("Dynamic seeding completed with Multi-Type Department HODs.")
 

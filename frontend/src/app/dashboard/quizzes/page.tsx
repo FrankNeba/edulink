@@ -82,6 +82,7 @@ export default function QuizzesPage() {
             await fetchData();
             setShowCreate(false);
             resetForm();
+            router.push(`/dashboard/quizzes/${quizId}/edit`);
         } catch (err: any) {
             setError(JSON.stringify(err?.response?.data) ?? 'Failed to create quiz');
         } finally {
@@ -268,6 +269,14 @@ export default function QuizzesPage() {
                                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                                     {isTeacher ? (
                                         <div className="flex gap-2 flex-wrap">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="rounded-xl h-8 text-xs font-black gap-1 border-violet-100 hover:bg-violet-50 dark:hover:bg-violet-950/20 text-violet-600 dark:text-violet-400"
+                                                onClick={() => router.push(`/dashboard/quizzes/${quiz.id}/edit`)}
+                                            >
+                                                <Icons.Pencil size={12} /> Edit Quiz
+                                            </Button>
                                             {!quiz.is_extracted && quiz.raw_file && (
                                                 <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs font-black gap-1"
                                                     onClick={() => handleExtract(quiz.id)}>

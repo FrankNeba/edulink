@@ -13,6 +13,11 @@ interface AcademicLevel {
     domain_name: string;
     sub_domain: number | null;
     sub_domain_name: string | null;
+    class_master_data?: {
+        first_name: string;
+        last_name: string;
+        email: string;
+    } | null;
 }
 
 export default function LevelsPage() {
@@ -88,8 +93,18 @@ export default function LevelsPage() {
                                                 <div className="text-lg font-black text-slate-900 dark:text-white group-hover:text-violet-600 transition-colors">
                                                     {l.name}
                                                 </div>
-                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                    View subjects
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                        View subjects
+                                                    </span>
+                                                    {l.class_master_data && (
+                                                        <>
+                                                            <span className="text-slate-300 dark:text-slate-700">&bull;</span>
+                                                            <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-1.5 py-0.5 rounded">
+                                                                CM: {l.class_master_data.first_name} {l.class_master_data.last_name[0]}.
+                                                            </span>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

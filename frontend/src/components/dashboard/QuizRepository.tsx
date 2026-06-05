@@ -84,10 +84,9 @@ export default function QuizRepository({ subjectId }: QuizRepositoryProps) {
             }
 
             await fetchData();
-            if (!error) {
-                setShowCreate(false);
-                resetForm();
-            }
+            setShowCreate(false);
+            resetForm();
+            router.push(`/dashboard/quizzes/${quizId}/edit`);
         } catch (err: any) {
             setError((err?.response?.data?.error || JSON.stringify(err?.response?.data)) ?? 'Failed to create quiz');
         } finally {

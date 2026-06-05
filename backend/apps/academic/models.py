@@ -58,10 +58,18 @@ class BaseSubject(models.Model):
     domain = models.ForeignKey(Domain, on_delete=models.SET_NULL, null=True, blank=True, related_name='base_subjects')
     sub_domain = models.ForeignKey(SubDomain, on_delete=models.SET_NULL, null=True, blank=True, related_name='base_subjects')
     description = models.TextField(blank=True)
-    hod = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_base_subjects', limit_choices_to={'role': 'HOD'})
+    hod = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_base_subjects', limit_choices_to=models.Q(role='HOD') | models.Q(role='TEACHER'))
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if self.hod and self.hod.role == 'TEACHER':
+            self.hod.role = 'HOD'
+            self.hod.save(update_fields=['role'])
+            from apps.accounts.models import HODProfile
+            HODProfile.objects.get_or_create(user=self.hod)
+        super().save(*args, **kwargs)
 
 class Subject(models.Model):
     base_subject = models.ForeignKey(BaseSubject, on_delete=models.CASCADE, related_name='instances', null=True, blank=True)
@@ -73,9 +81,17 @@ class Subject(models.Model):
     domain = models.ForeignKey(Domain, on_delete=models.SET_NULL, null=True, blank=True, related_name='subjects')
     sub_domain = models.ForeignKey(SubDomain, on_delete=models.SET_NULL, null=True, blank=True, related_name='subjects')
     
-    hod = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_subjects_hod', limit_choices_to={'role': 'HOD'})
+    hod = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_subjects_hod', limit_choices_to=models.Q(role='HOD') | models.Q(role='TEACHER'))
     teachers = models.ManyToManyField('accounts.User', related_name='assigned_subjects', blank=True, limit_choices_to={'role': 'TEACHER'})
     students = models.ManyToManyField('accounts.User', related_name='registered_subjects', blank=True, limit_choices_to={'role': 'STUDENT'})
 
     def __str__(self):
         return f"{self.code} - {self.name} ({self.level})"
+
+    def save(self, *args, **kwargs):
+        if self.hod and self.hod.role == 'TEACHER':
+            self.hod.role = 'HOD'
+            self.hod.save(update_fields=['role'])
+            from apps.accounts.models import HODProfile
+            HODProfile.objects.get_or_create(user=self.hod)
+        super().save(*args, **kwargs)

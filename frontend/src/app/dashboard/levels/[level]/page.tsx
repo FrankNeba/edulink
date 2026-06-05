@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import * as Icons from 'lucide-react';
 import api from '@/lib/api';
@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
 export default function LevelDetailPage() {
     const params = useParams();
@@ -29,8 +30,36 @@ export default function LevelDetailPage() {
     const [selectedTeachers, setSelectedTeachers] = useState<number[]>([]);
     const [teacherSearch, setTeacherSearch] = useState('');
     const [adding, setAdding] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
 
     const [selectedStudentDetail, setSelectedStudentDetail] = useState<any>(null);
+
+    const classMasterOptions = useMemo(() => {
+        const list = teachers.map(t => ({
+            value: t.id,
+            label: `${t.first_name} ${t.last_name}`,
+            sublabel: t.email
+        }));
+        return [
+            { value: '', label: 'Unassigned', sublabel: 'Clear Class Master' },
+            ...list
+        ];
+    }, [teachers]);
+
+    const handleAssignClassMaster = async (teacherId: string | number) => {
+        if (!currentLevelData?.id) return;
+        setActionLoading(true);
+        try {
+            await api.patch(`academic-levels/${currentLevelData.id}/`, {
+                class_master: teacherId || null
+            });
+            await fetchLevelData();
+        } catch (err) {
+            alert('Failed to assign Class Master');
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
     // Categories and Streams logic
     const isJunior = ['Form 1', 'Form 2', 'Form 3'].includes(level);
@@ -429,6 +458,53 @@ export default function LevelDetailPage() {
                 </div>
 
                 <div className="space-y-8">
+                    {/* Class Master Section */}
+                    <section>
+                        <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
+                            <div className="w-2 h-6 bg-violet-600 rounded-full" />
+                            Class Master
+                        </h2>
+                        <Card className="p-6">
+                            {currentLevelData?.class_master_data ? (
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-black text-lg">
+                                        {currentLevelData.class_master_data.first_name?.[0]}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                                            {currentLevelData.class_master_data.first_name} {currentLevelData.class_master_data.last_name}
+                                        </p>
+                                        <p className="text-[10px] text-slate-500 truncate">{currentLevelData.class_master_data.email}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-4 text-slate-400 dark:text-slate-600">
+                                    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                        <Icons.UserX className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold">Unassigned</p>
+                                        <p className="text-[10px]">No Class Master assigned yet</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {(user?.role === 'VICE_PRINCIPAL' || user?.role === 'PRINCIPAL') && (
+                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Assign Class Master</p>
+                                    <SearchableSelect
+                                        options={classMasterOptions}
+                                        value={currentLevelData?.class_master || ''}
+                                        onChange={(val) => handleAssignClassMaster(val)}
+                                        placeholder="Select Class Master..."
+                                        searchPlaceholder="Search teacher..."
+                                        disabled={actionLoading}
+                                    />
+                                </div>
+                            )}
+                        </Card>
+                    </section>
+
                     <section>
                         <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
                             <div className="w-2 h-6 bg-slate-900 dark:bg-white rounded-full" />
