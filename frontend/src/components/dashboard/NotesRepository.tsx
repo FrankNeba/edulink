@@ -61,7 +61,7 @@ export default function NotesRepository({
     const [sylError, setSylError] = useState('');
 
     // ── Roles ─────────────────────────────────────────────────────────────
-    const isVP = user?.role === 'VICE_PRINCIPAL';
+    const isVP = user?.role === 'VICE_PRINCIPAL' || user?.role === 'PRINCIPAL';
     const isHOD = user?.role === 'HOD';
     const isTeacher = user?.role === 'TEACHER';
     const canUploadNotes = isVP || isHOD || isTeacher;

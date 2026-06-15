@@ -220,7 +220,7 @@ export default function LevelDetailPage() {
                         {currentLevelData?.domain_name || 'Academic'} Segment &bull; {currentLevelData?.sub_domain_name || 'Common'} Stream
                     </p>
                 </div>
-                {(user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD') && !showAddForm && (
+                {(user?.role === 'PRINCIPAL' || user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD') && !showAddForm && (
                     <Button className="rounded-2xl h-12 px-6" onClick={() => setShowAddForm(true)}>
                         <Icons.Plus className="w-5 h-5" /> Add Subject to Level
                     </Button>
@@ -345,7 +345,7 @@ export default function LevelDetailPage() {
                                             {subject.teachers_data.length === 0 && <span className="text-[10px] text-slate-400 italic">No instructors</span>}
                                         </div>
                                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                            {(user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD') && (
+                                            {(user?.role === 'PRINCIPAL' || user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD') && (
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"

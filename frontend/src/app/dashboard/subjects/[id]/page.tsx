@@ -453,7 +453,7 @@ export default function SubjectDetailPage() {
                                                 <th className="px-5 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Student ID</th>
                                                 <th className="px-5 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Email</th>
                                                 <th className="px-5 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Level</th>
-                                                {(user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD') && (
+                                                {(user?.role === 'PRINCIPAL' || user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD') && (
                                                     <th className="px-5 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                                                 )}
                                             </tr>
@@ -492,7 +492,7 @@ export default function SubjectDetailPage() {
                                                                 {s.level}
                                                             </span>
                                                         </td>
-                                                        {(user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD') && (
+                                                        {(user?.role === 'PRINCIPAL' || user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD') && (
                                                             <td className="px-5 py-4 text-right">
                                                                 <Button
                                                                     variant="ghost"

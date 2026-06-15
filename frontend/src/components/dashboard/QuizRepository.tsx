@@ -34,7 +34,7 @@ export default function QuizRepository({ subjectId }: QuizRepositoryProps) {
     const [duration, setDuration] = useState('60');
     const [file, setFile] = useState<File | null>(null);
 
-    const isTeacher = user?.role === 'TEACHER' || user?.role === 'HOD' || user?.role === 'VICE_PRINCIPAL';
+    const isTeacher = user?.role === 'TEACHER' || user?.role === 'HOD' || user?.role === 'VICE_PRINCIPAL' || user?.role === 'PRINCIPAL';
 
     const fetchData = async () => {
         try {

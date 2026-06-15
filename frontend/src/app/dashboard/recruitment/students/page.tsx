@@ -111,7 +111,7 @@ export default function AddStudentsPage() {
         }
     };
 
-    if (!['VICE_PRINCIPAL', 'HOD'].includes(currentUser?.role || '')) {
+    if (!['PRINCIPAL', 'VICE_PRINCIPAL', 'HOD'].includes(currentUser?.role || '')) {
         return (
             <div className="h-[60vh] flex flex-col items-center justify-center text-center px-6">
                 <h1 className="text-2xl font-black mb-2 text-slate-900 dark:text-white">Access Restricted</h1>

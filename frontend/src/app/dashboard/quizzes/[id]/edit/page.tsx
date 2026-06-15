@@ -341,7 +341,7 @@ export default function QuizEditPage() {
         } : q));
     };
 
-    const isTeacher = user?.role === 'TEACHER' || user?.role === 'HOD' || user?.role === 'VICE_PRINCIPAL';
+    const isTeacher = user?.role === 'TEACHER' || user?.role === 'HOD' || user?.role === 'VICE_PRINCIPAL' || user?.role === 'PRINCIPAL';
 
     if (loading) return (
         <div className="flex items-center justify-center py-32">

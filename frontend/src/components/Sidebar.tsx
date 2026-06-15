@@ -52,7 +52,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen?: boolean, setIsOpen?: (val: bo
             label: 'Management',
             items: [
                 { name: 'Students', icon: Users, href: '/dashboard/recruitment/students', roles: ['PRINCIPAL', 'VICE_PRINCIPAL', 'HOD'] },
-                { name: 'Teachers', icon: UserCheck, href: '/dashboard/recruitment/teachers', roles: ['PRINCIPAL', 'VICE_PRINCIPAL', 'HOD'] },
+                { name: 'Teachers', icon: UserCheck, href: '/dashboard/teachers', roles: ['PRINCIPAL', 'VICE_PRINCIPAL', 'HOD'] },
             ]
         },
         {

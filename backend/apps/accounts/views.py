@@ -679,16 +679,75 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response({'message': 'Password changed successfully.'})
 
-    @action(detail=True, methods=['patch'], permission_classes=[IsPrincipal])
+    @action(detail=True, methods=['patch', 'post'], permission_classes=[IsVicePrincipal])
     def set_role(self, request, pk=None):
         user_to_change = self.get_object()
         new_role = request.data.get('role')
+        department_id = request.data.get('department_id')
+        
         if not new_role:
              return Response({'error': 'Role parameter required'}, status=400)
              
         if new_role not in [r[0] for r in User.Role.choices]:
             return Response({'error': 'Invalid role'}, status=400)
-        
-        user_to_change.role = new_role
-        user_to_change.save()
+            
+        # Permission checks
+        if request.user.role == 'VICE_PRINCIPAL':
+            if user_to_change.role == 'PRINCIPAL':
+                return Response({'error': 'A Vice Principal cannot change the role of a Principal account.'}, status=status.HTTP_403_FORBIDDEN)
+            if new_role == 'PRINCIPAL':
+                return Response({'error': 'A Vice Principal cannot assign a Principal.'}, status=status.HTTP_403_FORBIDDEN)
+            if new_role == 'VICE_PRINCIPAL':
+                return Response({'error': 'A Vice Principal cannot assign a Vice Principal.'}, status=status.HTTP_403_FORBIDDEN)
+
+        with transaction.atomic():
+            # Delete old profiles that are no longer valid
+            if new_role in ['PRINCIPAL', 'VICE_PRINCIPAL']:
+                TeacherProfile.objects.filter(user=user_to_change).delete()
+                HODProfile.objects.filter(user=user_to_change).delete()
+            elif new_role == 'TEACHER':
+                HODProfile.objects.filter(user=user_to_change).delete()
+                dept = None
+                if department_id:
+                    dept = Department.objects.filter(id=department_id).first()
+                if not dept:
+                    dept = Department.objects.first()
+                if not dept:
+                    return Response({'error': 'No departments exist to assign a Teacher to.'}, status=400)
+                TeacherProfile.objects.get_or_create(user=user_to_change, defaults={'department': dept})
+            elif new_role == 'HOD':
+                TeacherProfile.objects.filter(user=user_to_change).delete()
+                dept = None
+                if department_id:
+                    dept = Department.objects.filter(id=department_id).first()
+                if not dept:
+                    return Response({'error': 'department_id is required to assign HOD role.'}, status=400)
+                # Remove department from other HOD profiles to respect OneToOne constraint
+                HODProfile.objects.filter(department=dept).exclude(user=user_to_change).update(department=None)
+                
+                hod_profile, created = HODProfile.objects.get_or_create(user=user_to_change)
+                hod_profile.department = dept
+                hod_profile.save()
+            
+            user_to_change.role = new_role
+            user_to_change.save()
+
         return Response({'message': f'Role updated to {new_role}'})
+
+    @action(detail=False, methods=['get'], permission_classes=[IsVicePrincipal])
+    def teachers(self, request):
+        users = User.objects.filter(role__in=['TEACHER', 'HOD', 'VICE_PRINCIPAL', 'PRINCIPAL']).order_by('first_name', 'last_name')
+        data = []
+        for u in users:
+            user_data = UserSerializer(u).data
+            user_data['profile'] = None
+            if u.role == 'TEACHER':
+                profile = TeacherProfile.objects.filter(user=u).first()
+                if profile:
+                    user_data['profile'] = TeacherProfileSerializer(profile).data
+            elif u.role == 'HOD':
+                profile = HODProfile.objects.filter(user=u).first()
+                if profile:
+                    user_data['profile'] = HODProfileSerializer(profile).data
+            data.append(user_data)
+        return Response(data)

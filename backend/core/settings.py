@@ -109,23 +109,23 @@ ASGI_APPLICATION = 'core.asgi.application'
 # ── Database ────────────────────────────────────────────────────────────────────
 # Railway injects DATABASE_URL automatically when a Postgres plugin is attached.
 # Locally falls back to SQLite.
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-#         conn_max_age=0,
-#     )
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'edulink',
-        'USER': 'edulink',
-        'PASSWORD': 'edulink',
-        'HOST': '127.0.0.1',  # Use 'localhost' or '127.0.0.1' for local setup
-        'PORT': '5432',       # Default PostgreSQL port
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=0,
+    )
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'edulink',
+#         'USER': 'edulink',
+#         'PASSWORD': 'edulink',
+#         'HOST': '127.0.0.1',  # Use 'localhost' or '127.0.0.1' for local setup
+#         'PORT': '5432',       # Default PostgreSQL port
+#     }
+# }
 
 # Increase SQLite timeout to handle concurrent access
 if 'sqlite' in DATABASES['default']['ENGINE']:

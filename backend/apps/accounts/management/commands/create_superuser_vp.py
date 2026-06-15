@@ -3,7 +3,7 @@ from apps.accounts.models import User
 
 
 class Command(BaseCommand):
-    help = 'Create or update the EduLink vice-principal superuser'
+    help = 'Create or update the EduLink principal superuser'
 
     def handle(self, *args, **options):
         email = 'edulinkcameroon@gmail.com'
@@ -14,15 +14,15 @@ class Command(BaseCommand):
             u.set_password(password)
             u.is_superuser = True
             u.is_staff = True
-            u.role = 'VICE_PRINCIPAL'
+            u.role = 'PRINCIPAL'
             u.save()
             self.stdout.write(self.style.SUCCESS(f'Updated existing user: {email}'))
         else:
             u = User(
                 email=email,
-                first_name='Vice',
-                last_name='Principal',
-                role='VICE_PRINCIPAL',
+                first_name='Principal',
+                last_name='Admin',
+                role='PRINCIPAL',
                 is_superuser=True,
                 is_staff=True,
             )

@@ -53,8 +53,8 @@ export default function AnnouncementsPage() {
     const [search, setSearch] = useState('');
     const [editId, setEditId] = useState<number | null>(null);
 
-    const isAdmin = user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD';
-    const canCreate = ['VICE_PRINCIPAL', 'HOD', 'TEACHER'].includes(user?.role ?? '');
+    const isAdmin = user?.role === 'PRINCIPAL' || user?.role === 'VICE_PRINCIPAL' || user?.role === 'HOD';
+    const canCreate = ['PRINCIPAL', 'VICE_PRINCIPAL', 'HOD', 'TEACHER'].includes(user?.role ?? '');
 
     const fetchAll = useCallback(async () => {
         try {
